@@ -13,9 +13,14 @@ namespace ART
         {
             while (true)
             {
-                Ahead(5000);
+                Ahead(100);
 
-                TurnRight(90);
+                TurnRight(40);
+
+                Ahead(100);
+
+                TurnLeft(90);
+
             }
         }
 
@@ -23,6 +28,8 @@ namespace ART
         {
             // We fire the gun with bullet power = 1
             Fire(1);
+
+            TurnLeft(50);
         }
     }
 }
