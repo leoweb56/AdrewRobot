@@ -1,152 +1,147 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Drawing;
 using System.Linq;
 using System.Text;
 using Robocode;
-using Robocode.Util;
-using System.Drawing;
-
 //Andrew Robot Team
+using Robocode.Util;
+
 namespace ART
 {
     public class AndrewRobot : AdvancedRobot
     {
-        double previousEnergy = 102;
-        int movementDirection = 1;
-        int gunDirection = 1;
+        public Dictionary<string, ScannedRobotEvent> tagerts = new Dictionary<string, ScannedRobotEvent>(); 
+        public bool isFire = false;
+        public double ang = 30;
+        public double dist = 70;
+        public int sentido = 1;
+        public string tar_name;
+
+        //TODO hacer una clase que guarde cuantas veces le di, cuantos tiros le dispare, vida, distancia, etc. 
+        //TODO Tomar de todos los enemigos, tomar el q le di mas con menos disparos. Si hay mas de uno, tomar el mas cercano.
+
 
         public override void Run()
         {
             IsAdjustGunForRobotTurn = true;
             IsAdjustRadarForGunTurn = true;
-            
-            
-            RadarColor = Color.Green;
-            
-            //TurnGunLeft(20);
-            //TurnGunLeft(Utils.NormalAbsoluteAngleDegrees(Heading));
-            //TurnRight(Utils.NormalAbsoluteAngleDegrees(Heading));
-            //TurnRight(Heading);
-            //SetTurnRadarLeft(360);
+            IsAdjustRadarForRobotTurn = true;
+            //TurnRadarLeft(360);
+            //TurnGunRight(45);
             while (true)
             {
-                TurnRadarLeft(999999);
-                //(100);
-                //SetBack(100);
-            }
-            //if (Heading > 0)
-            //{
-            //    TurnGunLeft(Heading);
-            //}
-            //else
-            //{
-            //    TurnGunLeft(-Heading);
-            //}
-            //while (true)
-            //{
+
+                //Ahead(-10);
+                //TurnGunLeft(ang);
                 
-            //    TurnRadarRight(360);
-            ////    TurnRadarLeftRadians(2 * Math.PI);
-            ////    Ahead(100);
+                //isFire = false;
+                //TurnGunRight(20);
+                SetTurnRight(ang * sentido);
+                SetAhead(dist);
+                sentido *= -1;
+                //Ahead(-50);
+                SetTurnRadarLeft(360);
+                //TurnRadarLeft(30);
+                //TurnGunLeft(45);
+                //SetAhead(100);
 
-            ////    TurnRight(40);
+                Execute();
+            }
+            
 
-            ////    Ahead(100);
-
-            ////    TurnLeft(90);
-
-            //}
         }
 
-        public override void OnScannedRobot(ScannedRobotEvent e)
+        public override void OnScannedRobot(ScannedRobotEvent eu)
         {
+            UpdateTarget(eu);
+
+            var e = GetTarget();
             
-            TurnRight(90 + e.Bearing);
+            //ang = Utils.NormalRelativeAngleDegrees(e.Bearing + Heading - GunHeading);
+            //ang = Utils.NormalRelativeAngleDegrees(e.Bearing + Heading);
+            TurnGunRight(Utils.NormalRelativeAngleDegrees(e.Bearing + Heading - GunHeading));
+            //Fire(1);
 
-                SetAhead(100);
-                //SetBack(100);
-
-                TurnGunRight(Utils.NormalRelativeAngleDegrees(e.Bearing + (Heading - GunHeading)));
-            if (e.Distance < 120)
+            if (e.Distance < 100)
             {
                 Fire(3);
             }
-            else if (e.Distance < 130)
+            else if (e.Distance < 120)
             {
                 Fire(2);
-            }else
+            }
+            else
             {
                 Fire(1);
             }
-           
-            Scan();
-                //double changeInEnergy = previousEnergy - e.Energy;
-                //if (changeInEnergy != 0)
-                //{
-                //    var ang = e.Bearing;
-                //    TurnRight(ang + 90);
-                //    Ahead(e.Distance);
-                //    TurnLeft(ang);
-                //    Fire(1);
-
-                //    previousEnergy = e.Energy;
-                //}
-            //TurnRight(e.Bearing + 90);
-            //if (Heading > 0)
-            //{
-            //    TurnGunLeft(Heading);
-            //}
-            //else
-            //{
-            //    TurnGunLeft(-Heading);
-            //}
             
+            //TurnGunRight(ang + 3);
             //Fire(1);
-                //TurnRight(e.Bearing + 90 - 30 * movementDirection);
-                // We fire the gun with bullet power = 1
-                // If the bot has small energy drop,
-                // assume it fired
-                //double changeInEnergy = previousEnergy - e.Energy;
-                //if (changeInEnergy != 0 /* > 0 && changeInEnergy <= 3*/)
-                //{
-                //    TurnGunLeft(e.Bearing + Heading + 90);
-                //    Fire(1);
-                //    // Dodge!
-                //    movementDirection = (-1) * movementDirection;
-                //    Ahead((e.Distance / 4 + 25) * movementDirection);
+            //TurnGunRight(ang - 3);
+            //Fire(1);
+            //Scan();
+            //TurnRadarLeft(ang);
+            //Console.WriteLine(e.Bearing);
+            //TurnGunLeft(e.Bearing);
 
-                //    // When a bot is spotted,
-                //    // sweep the gun and radar
-                //    gunDirection = (-1) * gunDirection;
-                //    TurnGunRight(e.Bearing);// * gunDirection);
-                //    //TurnRight(e.Bearing);
-                //    // Fire directly at target
-                    
+        }
 
-                //    // Track the energy level
-                //    previousEnergy = e.Energy;
-                //}
-            //else
-            //{
-            //    Ahead(-e.Distance);
-            //    TurnGunLeft(30);
-            //    Fire(1);
-            //}
+        private ScannedRobotEvent GetTarget()
+        {
+            ScannedRobotEvent aux = null;
+
+            foreach (var target in tagerts.Values)
+            {
+                if (aux == null)
+                {
+                    aux = target;
+                }
+                else
+                {
+                    if (aux.Distance > target.Distance)
+                    {
+                        aux = target;
+                    }
+                }
+            }
+
+            return aux;
+        }
+
+        private void UpdateTarget(ScannedRobotEvent e)
+        {
+            if (tagerts.Keys.Contains(e.Name))
+            {
+                tagerts[e.Name] = e;
+            }
+            else
+            {
+                tagerts.Add(e.Name,e);
+            }
+        }
+
+        public override void OnRobotDeath(RobotDeathEvent evnt)
+        {
+            tagerts.Remove(evnt.Name);
+        }
+
+        public override void OnHitByBullet(HitByBulletEvent e)
+        {
+            TurnRight(Utils.NormalRelativeAngleDegrees(90 + e.Heading));
+
+            //Ahead(dist);
+            dist *= -1;
+            //TurnLeft(45);
+            Ahead(dist);
+            Scan();
         }
 
         public override void OnHitWall(HitWallEvent evnt)
         {
-            TurnRight(90);
-
-            Ahead(100);
-
-            Scan();
-        }
-
-        public override void OnHitByBullet(HitByBulletEvent evnt)
-        {
-            //TurnRight(90);
-            
+            TurnLeft(90);
         }
     }
 }
+
