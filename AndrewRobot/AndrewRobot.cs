@@ -14,11 +14,22 @@ namespace ART
     {
         public Dictionary<string, ScannedRobotEvent> tagerts = new Dictionary<string, ScannedRobotEvent>(); 
         public bool isFire = false;
-        public double ang = 30;
-        public double dist = 70;
+        public double ang = 45;
+        public double dist = 100;
         public int sentido = 1;
         public string tar_name;
 
+        public double margin = 100;
+
+
+        #region Variables Intercept
+
+        private Coordinate bulletStartingPoint = null;
+        private Coordinate targetStartingPoint = null;
+        private double targetVelocity;
+        private double targetHeading;
+
+        #endregion
         //TODO hacer una clase que guarde cuantas veces le di, cuantos tiros le dispare, vida, distancia, etc. 
         //TODO Tomar de todos los enemigos, tomar el q le di mas con menos disparos. Si hay mas de uno, tomar el mas cercano.
 
@@ -28,47 +39,128 @@ namespace ART
             IsAdjustGunForRobotTurn = true;
             IsAdjustRadarForGunTurn = true;
             IsAdjustRadarForRobotTurn = true;
-            //TurnRadarLeft(360);
-            //TurnGunRight(45);
             while (true)
             {
+                Console.WriteLine("x: " + X);
+                Console.WriteLine("y: " + Y);
+                if ((X >= BattleFieldWidth - (margin + Height)))
+                {
+                    //TurnRight(-Heading);
+                    TurnRight(Utils.NormalRelativeAngleDegrees(-Heading - 90));
+                    Ahead(dist - 20);
+                    //WaitFor(new TurnCompleteCondition(this));
+                }
+                else if (Y >= BattleFieldHeight - (margin + Height))
+                {
+                    TurnRight(Utils.NormalRelativeAngleDegrees(-Heading - 180));
+                    Ahead(dist - 20);
+                    //WaitFor(new TurnCompleteCondition(this));
+                }
+                else if (Y <= (margin + Height))
+                {
+                    //TurnRight(-Heading);
+                    TurnRight(Utils.NormalRelativeAngleDegrees(-Heading));
+                    Ahead(dist - 20);
+                    //WaitFor(new TurnCompleteCondition(this));
+                }
+                else if (X <= (margin + Height))
+                {
+                    TurnRight(Utils.NormalRelativeAngleDegrees(-Heading + 90));
+                    Ahead(dist - 20);
+                    //WaitFor(new TurnCompleteCondition(this));
+                }
+                else
+                {
+                    sentido *= -1;
+                    SetTurnRight(ang*sentido);
+                    SetAhead(dist);
 
-                //Ahead(-10);
-                //TurnGunLeft(ang);
-                
-                //isFire = false;
-                //TurnGunRight(20);
-                SetTurnRight(ang * sentido);
-                SetAhead(dist);
-                sentido *= -1;
-                //Ahead(-50);
+                }
+
                 SetTurnRadarLeft(360);
-                //TurnRadarLeft(30);
-                //TurnGunLeft(45);
-                //SetAhead(100);
 
                 Execute();
             }
-            
+
 
         }
 
         public override void OnScannedRobot(ScannedRobotEvent eu)
         {
-            UpdateTarget(eu);
+            double absBearingDeg = Utils.NormalRelativeAngleDegrees( (Heading + eu.Bearing - GunHeading));
+            TurnGunRight(absBearingDeg);
+            GoFire(eu.Distance);
 
-            var e = GetTarget();
-            
-            //ang = Utils.NormalRelativeAngleDegrees(e.Bearing + Heading - GunHeading);
-            //ang = Utils.NormalRelativeAngleDegrees(e.Bearing + Heading);
-            TurnGunRight(Utils.NormalRelativeAngleDegrees(e.Bearing + Heading - GunHeading));
-            //Fire(1);
+            //if (absBearingDeg < 0) absBearingDeg += 360;
 
-            if (e.Distance < 100)
+
+//            // yes, you use the _sine_ to get the X value because 0 deg is North
+//            var x = X + Math.Sin(Utils.ToRadians(absBearingDeg)) * eu.Distance;
+
+//            // yes, you use the _cosine_ to get the Y value because 0 deg is North
+//            var y = Y + Math.Cos(Utils.ToRadians(absBearingDeg)) * eu.Distance;
+
+//            bulletStartingPoint = new Coordinate(X, Y);
+//            targetStartingPoint = new Coordinate(x, y);
+//            targetVelocity = eu.Velocity;
+//            targetHeading = eu.Heading;
+
+//            var impactPoint = getEstimatedPosition(getImpactTime(0, 10, 0.1));
+
+//            var dX = (impactPoint.x - bulletStartingPoint.x);
+//            var dY = (impactPoint.y - bulletStartingPoint.y);
+
+//            var distance = Math.Sqrt(dX * dX + dY * dY);
+
+//            var bulletHeading_deg = Utils.ToDegrees(Math.Atan2(dX, dY));
+
+
+//            double turnAngle = Utils.NormalRelativeAngle(bulletHeading_deg + GunHeading);
+
+//// Move gun to target angle
+//            TurnGunRight(bulletHeading_deg);
+
+//            var angleThreshold = Utils.ToDegrees(Math.Atan(20/distance));
+
+            //if (Math.Abs(turnAngle) <= angleThreshold)
+            //{
+            //GoFire(eu.Distance);
+                
+            //}
+
+
+            Execute();
+
+            //UpdateTarget(eu);
+
+            //var e = GetTarget();
+
+            //TurnGunRight(Utils.NormalRelativeAngleDegrees(e.Bearing + Heading - GunHeading));
+
+            //if (e.Distance < 100)
+            //{
+            //    Fire(3);
+            //}
+            //else if (e.Distance < 120)
+            //{
+            //    Fire(2);
+            //}
+            //else
+            //{
+            //    Fire(1);
+            //}
+
+
+
+        }
+
+        private void GoFire(double distance)
+        {
+            if (distance < 100)
             {
                 Fire(3);
             }
-            else if (e.Distance < 120)
+            else if (distance < 120)
             {
                 Fire(2);
             }
@@ -76,16 +168,53 @@ namespace ART
             {
                 Fire(1);
             }
-            
-            //TurnGunRight(ang + 3);
-            //Fire(1);
-            //TurnGunRight(ang - 3);
-            //Fire(1);
-            //Scan();
-            //TurnRadarLeft(ang);
-            //Console.WriteLine(e.Bearing);
-            //TurnGunLeft(e.Bearing);
+        }
 
+        private double f(double time)
+        {
+            var bulletPower = 1;
+            double vb = 20 - 3 * bulletPower;
+
+            Coordinate targetPosition = getEstimatedPosition(time);
+            double dX = (targetPosition.x - bulletStartingPoint.x);
+            double dY = (targetPosition.y - bulletStartingPoint.y);
+
+            return Math.Sqrt(dX * dX + dY * dY) - vb * time;
+        }
+
+        private double getImpactTime(double t0, double t1, double accuracy)
+        {
+
+            double X = t1;
+            double lastX = t0;
+            int iterationCount = 0;
+            double lastfX = f(lastX);
+
+            while ((Math.Abs(X - lastX) >= accuracy) &&
+                   (iterationCount < 15))
+            {
+
+                iterationCount++;
+                double fX = f(X);
+
+                if ((fX - lastfX) == 0.0) break;
+
+                double nextX = X - fX*(X - lastX)/(fX - lastfX);
+                lastX = X;
+                X = nextX;
+                lastfX = fX;
+            }
+
+            return X;
+        }
+
+        protected Coordinate getEstimatedPosition(double time)
+        {
+            double x = targetStartingPoint.x +
+                       targetVelocity*time*Math.Sin(Utils.ToRadians(targetHeading));
+            double y = targetStartingPoint.y +
+                       targetVelocity*time*Math.Cos(Utils.ToRadians(targetHeading));
+            return new Coordinate(x, y);
         }
 
         private ScannedRobotEvent GetTarget()
@@ -129,18 +258,18 @@ namespace ART
 
         public override void OnHitByBullet(HitByBulletEvent e)
         {
-            TurnRight(Utils.NormalRelativeAngleDegrees(90 + e.Heading));
+            TurnRight(Utils.NormalRelativeAngleDegrees(45 - e.Heading));
 
             //Ahead(dist);
-            dist *= -1;
+            //dist *= -1;
             //TurnLeft(45);
-            Ahead(dist);
-            Scan();
+            //Ahead(dist);
+            //Scan();
         }
 
         public override void OnHitWall(HitWallEvent evnt)
         {
-            TurnLeft(90);
+            //TurnLeft(90);
         }
     }
 }

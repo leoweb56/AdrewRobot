@@ -46,6 +46,7 @@
     <Compile Include="AndrewRobot.cs" />
     <Compile Include="AndrewRobotAntiGravity.cs" />
     <Compile Include="AndrewRobotIntercept.cs" />
+    <Compile Include="Coordinate.cs" />
     <Compile Include="Si2.cs" />
     <Compile Include="Fire.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
