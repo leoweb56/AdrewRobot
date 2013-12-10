@@ -25,7 +25,7 @@ namespace ART
 
                 strategyManager.GetStrategy().ActionMove();
 
-                Execute();
+                //Execute();
             }
         }
 
@@ -33,9 +33,20 @@ namespace ART
         {
             strategyManager.GetStrategy().ActionFire(new Enemy(eu, this));
 
-            Execute();
+            //Execute();
         }
 
+        public override void OnBulletHit(BulletHitEvent evnt)
+        {
+            strategyManager.GetStrategy().ActionBulletHit(evnt);
+
+            //Execute();
+        }
+
+        public override void OnHitByBullet(HitByBulletEvent evnt)
+        {
+            strategyManager.GetStrategy().ActionHitByBullet(evnt);
+        }
     }
 }
 

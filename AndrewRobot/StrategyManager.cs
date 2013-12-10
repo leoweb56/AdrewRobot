@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using System.Text;
 using Robocode;
@@ -40,7 +41,14 @@ namespace ART
         public Strategy GetStrategy()
         {
             //TODO poner logica de cual estrategia devolver
-            return this.strategies[StrategiesTypes.SUPER_WALLS];
+            Strategy strategy = this.strategies[StrategiesTypes.SUPER_WALLS];
+            
+            if (myRobot.Others > 1 || myRobot.Energy < 60)
+            {
+                strategy = this.strategies[StrategiesTypes.SUPER_WALLS];
+            }
+
+            return strategy;
         }
     }
 }

@@ -16,5 +16,7 @@ namespace ART
         public virtual void ActionFire(Enemy e) { }
         public virtual void ActionHitMe(Enemy e) { }
         public virtual void ActionHitWall() { }
+        public virtual void ActionBulletHit(BulletHitEvent ev){}
+        public virtual void ActionHitByBullet(HitByBulletEvent ev) { }
     }
 }
