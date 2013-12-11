@@ -15,6 +15,7 @@ namespace ART
         private Enemy NearTarget = null;
         private double Shots = 0;
         private double Hits = 0;
+        private int margin = 60;
 
         public override void InitializeRobot()
         {
@@ -33,13 +34,13 @@ namespace ART
                 MyRobot.TurnRight(-MyRobot.Heading);
             }
 
-            if (Utils.IsNear(MyRobot.HeadingRadians, 0D) || Utils.IsNear(MyRobot.HeadingRadians, Math.PI))
+            if (Utils.IsNear(MyRobot.HeadingRadians, 5D) || Utils.IsNear(MyRobot.HeadingRadians, Math.PI))
             {
-                MyRobot.Ahead((Math.Max(MyRobot.BattleFieldHeight - MyRobot.Y, MyRobot.Y) - 28) * dir);
+                MyRobot.Ahead((Math.Max(MyRobot.BattleFieldHeight - MyRobot.Y, MyRobot.Y) - margin) * dir);
             }
             else
             {
-                MyRobot.Ahead((Math.Max(MyRobot.BattleFieldWidth - MyRobot.X, MyRobot.X) - 28) * dir);
+                MyRobot.Ahead((Math.Max(MyRobot.BattleFieldWidth - MyRobot.X, MyRobot.X) - margin) * dir);
             }
             MyRobot.TurnRight(90 * dir);
 
@@ -82,6 +83,8 @@ namespace ART
 
         public override void ActionFire(Enemy e)
         {
+            MyRobot.IsAdjustGunForRobotTurn = true;
+
             if (NearTarget == null || (NearTarget.name != e.name && NearTarget.distance > e.distance) ||
                 (NearTarget.name == e.name))
             {
@@ -96,16 +99,6 @@ namespace ART
 
             double radarTurn = absBearing - MyRobot.RadarHeadingRadians;
 
-            if (Utils.IsNear(MyRobot.HeadingRadians, 0D) || Utils.IsNear(MyRobot.HeadingRadians, Math.PI))
-            {
-                MyRobot.SetAhead((Math.Max(MyRobot.BattleFieldHeight - MyRobot.Y, MyRobot.Y) - 28)*dir);
-            }
-            else
-            {
-                MyRobot.SetAhead((Math.Max(MyRobot.BattleFieldWidth - MyRobot.X, MyRobot.X) - 28)*dir);
-            }
-
-
             MyRobot.MaxVelocity = Rules.MAX_VELOCITY;
 
             MyRobot.SetTurnGunRightRadians(Utils.NormalRelativeAngle(absBearing - MyRobot.GunHeadingRadians));
@@ -113,20 +106,15 @@ namespace ART
             Shots++;
             DoFire(NearTarget);
 
-            MyRobot.SetTurnRadarRightRadians(Utils.NormalRelativeAngle(radarTurn)*2);
-            //if (MyRobot.Others == 1)
-            //{
-            //    MyRobot.SetTurnRadarRightRadians(Utils.NormalRelativeAngle(radarTurn)*2); // Make the radar lock on
-            //}
-            //else
-            //{
-            //    MyRobot.SetTurnRadarRight(double.PositiveInfinity);
-            //}
-
-            //MyRobot.TurnGunRight(Utils.NormalRelativeAngleDegrees(MyRobot.Heading + e.bearing - MyRobot.GunHeading));
-
-            //DoFire(e);
-            MyRobot.Execute();
+            //MyRobot.SetTurnRadarRightRadians(Utils.NormalRelativeAngle(radarTurn)*2);
+            if (MyRobot.Others == 1)
+            {
+                MyRobot.SetTurnRadarRightRadians(Utils.NormalRelativeAngle(radarTurn) * 2); // make the radar lock on
+            }
+            else
+            {
+                MyRobot.SetTurnRadarRight(double.PositiveInfinity);
+            }
 
         }
 
@@ -153,17 +141,7 @@ namespace ART
 
         public override void ActionHitByBullet(HitByBulletEvent ev)
         {
-            //MyRobot.TurnRight(90);
             MyRobot.TurnRadarRight(360);
-            dir = -dir;
-            if (Utils.IsNear(MyRobot.HeadingRadians, 0D) || Utils.IsNear(MyRobot.HeadingRadians, Math.PI))
-            {
-                MyRobot.Ahead((Math.Min(MyRobot.BattleFieldHeight - MyRobot.Y, 60) - 28) * dir);
-            }
-            else
-            {
-                MyRobot.Ahead((Math.Min(MyRobot.BattleFieldWidth - MyRobot.X, 60) - 28) * dir);
-            }
         }
 
         public override void ActionBulletHit(BulletHitEvent ev)

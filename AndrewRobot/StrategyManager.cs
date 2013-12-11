@@ -10,6 +10,7 @@ namespace ART
     public enum StrategiesTypes
     {
         SUPER_WALLS,
+        EIGHT,
     }
 
     public class StrategyManager
@@ -24,6 +25,7 @@ namespace ART
 
             //Strategies
             this.strategies.Add(StrategiesTypes.SUPER_WALLS, new SuperWallsStratergy());
+            this.strategies.Add(StrategiesTypes.EIGHT, new EightStrategy());
 
             //Initialize strategies
             InitializeStrategies();
@@ -46,6 +48,10 @@ namespace ART
             if (myRobot.Others > 1 || myRobot.Energy < 60)
             {
                 strategy = this.strategies[StrategiesTypes.SUPER_WALLS];
+            }
+            else
+            {
+                strategy = this.strategies[StrategiesTypes.EIGHT];
             }
 
             return strategy;
