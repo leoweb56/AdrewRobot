@@ -17,22 +17,25 @@ namespace ART
 
         public override void Run()
         {
+            
             this.strategyManager = new StrategyManager(this);
 
             while (true)
             {
+                Console.WriteLine(Time);
                 strategyManager.GetStrategy().ActionMoveRadar();
 
                 strategyManager.GetStrategy().ActionMove();
 
                 //Execute();
+                
             }
         }
 
         public override void OnScannedRobot(ScannedRobotEvent eu)
         {
             strategyManager.GetStrategy().ActionFire(new Enemy(eu, this));
-
+            
             //Execute();
         }
 
